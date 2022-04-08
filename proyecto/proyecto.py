@@ -1,11 +1,13 @@
-import tkinter as tk
+from tkinter import Tk
+from client.gui_app import Ventana
 
 def main():
-    root = tk.Tk()
+    root = Tk()
     root.title('Teoria de sistemas')
+    root.minsize(height=475, width=795)
 
-
-    root.mainloop()
+    app = Ventana(root)
+    app.mainloop()
 
 if __name__ == '__main__':
     main()
