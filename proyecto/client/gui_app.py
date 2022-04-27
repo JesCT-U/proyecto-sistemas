@@ -1,13 +1,9 @@
+from cgitb import text
 from tkinter import Tk, Button, Entry, Label, filedialog, ttk, PhotoImage, StringVar, Scrollbar, Frame
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
-import random
 
-lista = []
-
-for i in range(50,200,10):
-	lista.append(i)
 
 class Ventana(Frame):
     def __init__(self, master):
@@ -24,60 +20,148 @@ class Ventana(Frame):
         self.frame_principal.columnconfigure(0, weight=1)
         self.frame_principal.rowconfigure(0, weight=1)
 
+        self.valor_amplitud = 0.10
+
         self.widgets()
 
     def widgets(self):
         ####### IMAGENES #######
         self.imagen_play = PhotoImage(file='proyecto/img/play.png')
+        self.imagen_reflejar = PhotoImage(file='proyecto/img/al_reves.png')
+        self.imagen_amplitud = PhotoImage(file='proyecto/img/volumen.png')
+        self.imagen_efecto = PhotoImage(file='proyecto/img/_efecto.png')
+        self.imagen_intercambio = PhotoImage(
+            file='proyecto/img/intercambio.png')
         self.imagen_folder = PhotoImage(file='proyecto/img/folder.png')
         self.imagen_stop = PhotoImage(file='proyecto/img/stop.png')
         self.imagen_pause = PhotoImage(file='proyecto/img/pause.png')
+        self.imagen_subir = PhotoImage(file='proyecto/img/subir.png')
+        self.imagen_bajar = PhotoImage(file='proyecto/img/baja.png')
         self.logo = PhotoImage(file='proyecto/img/connection.png')
 
         ####### BOTONES DEL MENU LATERAL #######
-        self.btn_play = Button(self.frame_menu, image=self.imagen_play, bg='#272A31', activebackground='black', bd=0, command=self.pantalla_play).grid(column=0, row=0)
+        self.btn_play = Button(self.frame_menu, image=self.imagen_play, bg='#272A31',
+                               activebackground='black', bd=0, command=self.pantalla_play).grid(column=0, row=0)
+        self.btn_intercambio = Button(self.frame_menu, image=self.imagen_intercambio, bg='#272A31',
+                                      activebackground='black', bd=0, command=self.pantalla_intercambiar).grid(column=0, row=1)
+        self.btn_reflejar = Button(self.frame_menu, image=self.imagen_reflejar, bg='#272A31',
+                                   activebackground='black', bd=0, command=self.pantalla_reflejar).grid(column=0, row=2)
+        self.btn_amplitud = Button(self.frame_menu, image=self.imagen_amplitud, bg='#272A31',
+                                   activebackground='black', bd=0, command=self.pantalla_amplitud).grid(column=0, row=3)
+        self.btn_efecto = Button(self.frame_menu, image=self.imagen_efecto, bg='#272A31',
+                                 activebackground='black', bd=0, command=self.pantalla_efecto).grid(column=0, row=4)
 
         ####### CREAR PAGINAS #######
         estilo_paginas = ttk.Style()
         estilo_paginas.theme_use('default')
-        estilo_paginas.configure("TNotebook", background='black', borderwidth=0)
-        estilo_paginas.configure("TNotebook.Tab", background="black", borderwidth=0)
+        estilo_paginas.configure(
+            "TNotebook", background='black', borderwidth=0)
+        estilo_paginas.configure(
+            "TNotebook.Tab", background="black", borderwidth=0)
         estilo_paginas.map("TNotebook.Tab", background=[("selected", 'black')])
 
         self.paginas = ttk.Notebook(self.frame_principal, style='TNotebook')
         self.paginas.grid(column=0, row=0, sticky='nsew')
         self.frame_uno = Frame(self.paginas, bg='black')
         self.frame_dos = Frame(self.paginas, bg='black')
+        self.frame_tres = Frame(self.paginas, bg='black')
+        self.frame_cuatro = Frame(self.paginas, bg='black')
+        self.frame_cinco = Frame(self.paginas, bg='black')
+        self.frame_seis = Frame(self.paginas, bg='black')
         self.paginas.add(self.frame_uno)
         self.paginas.add(self.frame_dos)
+        self.paginas.add(self.frame_tres)
+        self.paginas.add(self.frame_cuatro)
+        self.paginas.add(self.frame_cinco)
+        self.paginas.add(self.frame_seis)
 
         ####### FRAME TOP #######
-        self.titulo = Label(self.frame_top, text="Cargue un archivo de audio", bg='black', fg='gray', font=('Arial', 15, 'bold'))
+        self.titulo = Label(self.frame_top, text="Cargue un archivo de audio",
+                            bg='black', fg='gray', font=('Arial', 15, 'bold'))
         self.titulo.pack(side='left')
-        self.btn_cargar = Button(self.frame_top, image=self.imagen_folder, bg='black', activebackground='red', bd=0, command=self.cargar_archivo).pack(side='right')
+        self.btn_cargar = Button(self.frame_top, image=self.imagen_folder, bg='black',
+                                 activebackground='red', bd=0, command=self.cargar_archivo).pack(side='right')
 
         ####### FRAME UNO #######
-        Label(self.frame_uno, text='Jesus Capriel - 201908009', bg='black', fg='white', font=('Arial', 20, 'bold')).pack(expand=1)
-        Label(self.frame_uno, text='Gelder Tubac - 2018XXXXX', bg='black', fg='white', font=('Arial', 20, 'bold')).pack(expand=1)
+        Label(self.frame_uno, text='Jesus Capriel - 201908009', bg='black',
+              fg='white', font=('Arial', 20, 'bold')).pack(expand=1)
+        Label(self.frame_uno, text='Gelder Tubac - 201808036', bg='black',
+              fg='white', font=('Arial', 20, 'bold')).pack(expand=1)
         Label(self.frame_uno, image=self.logo, bg='black').pack(expand=1)
 
         ####### FRAME DOS #######
         self.frame1 = Frame(self.frame_dos, bg='black', width=600, height=350)
         self.frame1.grid(column=0, row=0)
+        Label(self.frame1, text='Reproducir audio', bg='black',
+              fg='white', font=('Calibri', 20, 'bold')).pack(expand=1)
+
         self.frame2 = Frame(self.frame_dos, bg='black', width=600, height=50)
         self.frame2.grid(column=0, row=1)
-
-        self.pantalla_bumetro()
-
-        boton1 = Button(self.frame2, image=self.imagen_play, bg='black', command=self._play)
+        boton1 = Button(self.frame2, image=self.imagen_play,
+                        bg='black', command=self._play)
         boton1.grid(column=0, row=0, pady=10)
-        boton2 = Button(self.frame2, image=self.imagen_pause, bg='black', command=self._stop)
-        boton2.grid(column=1, row=0, pady=10)
-        boton3 = Button(self.frame2, image=self.imagen_stop, bg='black', command=self._stop)
-        boton3.grid(column=2, row=0, pady=10)
+        boton2 = Button(self.frame2, image=self.imagen_stop,
+                        bg='black', command=self._stop)
+        boton2.grid(column=2, row=0, pady=10)
+
+        ####### FRAME TRES #######
+        self.frame3 = Frame(self.frame_tres, bg='black', width=600, height=350)
+        self.frame3.grid(column=0, row=0)
+        Label(self.frame3, text='Intercambiar canales', bg='black',
+              fg='white', font=('Calibri', 20, 'bold')).pack(expand=1)
+
+        self.frame4 = Frame(self.frame_tres, bg='black', width=600, height=50)
+        self.frame4.grid(column=0, row=1)
+        boton3 = Button(self.frame4, image=self.imagen_play,
+                        bg='black', command=self._intercambiar)
+        boton3.grid(column=0, row=0, pady=10)
+        boton4 = Button(self.frame4, image=self.imagen_stop,
+                        bg='black', command=self._stop)
+        boton4.grid(column=2, row=0, pady=10)
+
+        ####### FRAME CUATRO #######
+        self.frame5 = Frame(self.frame_cuatro, bg='black',
+                            width=600, height=350)
+        self.frame5.grid(column=0, row=0)
+        Label(self.frame5, text='Reflejar canales', bg='black',
+              fg='white', font=('Calibri', 20, 'bold')).pack(expand=1)
+
+        self.frame6 = Frame(self.frame_cuatro, bg='black',
+                            width=600, height=50)
+        self.frame6.grid(column=0, row=1)
+        boton5 = Button(self.frame6, image=self.imagen_play,
+                        bg='black', command=self._reflejar)
+        boton5.grid(column=0, row=0, pady=10)
+        boton6 = Button(self.frame6, image=self.imagen_stop,
+                        bg='black', command=self._stop)
+        boton6.grid(column=2, row=0, pady=10)
+
+        ####### FRAME CINCO #######
+        self.frame7 = Frame(self.frame_cinco, bg='black',
+                            width=600, height=350)
+        self.frame7.grid(column=0, row=0)
+        self.nivel_amplitud = Label(self.frame7, text='Incrementar o decrementar amplitud',
+                                    bg='black', fg='white', font=('Calibri', 20, 'bold'))
+        self.nivel_amplitud.pack(expand=1)
+
+        self.frame8 = Frame(self.frame_cinco, bg='black', width=600, height=50)
+        self.frame8.grid(column=0, row=1)
+        boton7 = Button(self.frame8, image=self.imagen_play,
+                        bg='black', command=self._amplitud)
+        boton7.grid(column=0, row=0, pady=10)
+        boton8 = Button(self.frame8, image=self.imagen_stop,
+                        bg='black', command=self._stop)
+        boton8.grid(column=1, row=0, pady=10)
+        boton9 = Button(self.frame8, image=self.imagen_subir,
+                        bg='black', command=self._subir)
+        boton9.grid(column=2, row=0, pady=10)
+        boton10 = Button(self.frame8, image=self.imagen_bajar,
+                         bg='black', command=self._bajar)
+        boton10.grid(column=3, row=0, pady=10)
 
     def cargar_archivo(self):
-        self.direccion = filedialog.askopenfilename(initialdir='/', title='Escoger archivo', filetypes=(('mp3 files', '*.mp3*'),('All files', '*.*')))
+        self.direccion = filedialog.askopenfilename(
+            initialdir='/', title='Escoger archivo', filetypes=(('mp3 files', '*.mp3*'), ('All files', '*.*')))
 
         if self.direccion != '':
             nombre_cancion = self.direccion.split('/')
@@ -88,85 +172,90 @@ class Ventana(Frame):
         try:
             s, fs = sf.read(self.direccion)
             sd.play(s, fs)
-            self.bumetro()
         except:
             print('Ingrese una cancion')
 
     def _stop(self):
         sd.stop()
-        self.frame1.after_cancel(self.actualizar)
 
-    def bumetro(self):
-        self.barra1['value'] = random.choice(lista)
-        self.barra2['value'] = random.choice(lista)
-        self.barra3['value'] = random.choice(lista)
-        self.barra4['value'] = random.choice(lista)
-        self.barra5['value'] = random.choice(lista)
-        self.barra6['value'] = random.choice(lista)
-        self.barra7['value'] = random.choice(lista)
-        self.barra8['value'] = random.choice(lista)
-        self.barra9['value'] = random.choice(lista)
-        self.barra10['value'] = random.choice(lista)
-        self.barra11['value'] = random.choice(lista)
-        self.barra12['value'] = random.choice(lista)
-        self.barra13['value'] = random.choice(lista)
-        self.barra14['value'] = random.choice(lista)
-        self.barra15['value'] = random.choice(lista)
-        self.barra16['value'] = random.choice(lista)
-        self.barra17['value'] = random.choice(lista)
-        self.barra18['value'] = random.choice(lista)
-        self.barra19['value'] = random.choice(lista)
-        self.barra20['value'] = random.choice(lista)
+    def _intercambiar(self):
+        try:
+            s, fs = sf.read(self.direccion)
 
-        self.actualizar = self.frame1.after(100, self.bumetro)
-    
+            ffs = 0
+            fss = 0
+            longitud = len(s)
+
+            for x in range(0, longitud):
+                for y in [0, 1]:
+                    if y == 0:
+                        ffs = s[x, y]
+                    else:
+                        fss = s[x, y]
+
+                s[x, 0] = fss
+                s[x, 1] = ffs
+
+            sd.play(s, fs)
+        except:
+            print('Ingrese una cancion')
+
+    def _reflejar(self):
+
+        try:
+            s, fs = sf.read(self.direccion)
+            s = s[:: -1]
+            sd.play(s, fs)
+        except:
+            print('Ingrese una cancion')
+
+    def _amplitud(self):
+        try:
+            s, fs = sf.read(self.direccion)
+            s = np.multiply(s, self.valor_amplitud)
+
+            sd.play(s, fs)
+        except:
+            print('Ingrese una cancion')
+
+    def _subir(self):
+        if self.valor_amplitud < 0.90:
+            self.valor_amplitud = self.valor_amplitud + 0.10
+            self.nivel_amplitud['text'] = str(
+                int(self.valor_amplitud*100)) + '%'
+
+    def _bajar(self):
+        if self.valor_amplitud > 0.10:
+            self.valor_amplitud = self.valor_amplitud - 0.10
+            self.nivel_amplitud['text'] = str(
+                int(self.valor_amplitud*100)) + '%'
+
     def pantalla_play(self):
         self.paginas.select([self.frame_dos])
         self.frame_dos.columnconfigure(0, weight=1)
         self.frame_dos.rowconfigure(0, weight=1)
         self.frame_dos.rowconfigure(1, weight=1)
 
-    def pantalla_bumetro(self):
-        estilo = ttk.Style()
-        estilo.configure("Vertical.TProgressbar", foreground='green2', background='green2',troughcolor='black',bordercolor='black', borderwidth=0, lightcolor='green2', darkcolor='green2')
+    def pantalla_intercambiar(self):
+        self.paginas.select([self.frame_tres])
+        self.frame_tres.columnconfigure(0, weight=1)
+        self.frame_tres.rowconfigure(0, weight=1)
+        self.frame_tres.rowconfigure(1, weight=1)
 
-        self.barra1 = ttk.Progressbar(self.frame1, orient='vertical', length=300, maximum=300)
-        self.barra1.grid(column=0, row=0, padx=1)
-        self.barra2 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra2.grid(column=1, row=0, padx = 1)
-        self.barra3 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra3.grid(column=2, row=0, padx = 1)
-        self.barra4 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra4.grid(column=3, row=0, padx = 1)
-        self.barra5 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra5.grid(column=4, row=0, padx = 1)
-        self.barra6 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra6.grid(column=5, row=0, padx = 1)
-        self.barra7 = ttk.Progressbar(self.frame1, orient= 'vertical', length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra7.grid(column=6, row=0, padx = 1)
-        self.barra8 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra8.grid(column=7, row=0, padx = 1)
-        self.barra9 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra9.grid(column=8, row=0, padx = 1)
-        self.barra10 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra10.grid(column=9, row=0, padx = 1)
-        self.barra11 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra11.grid(column=10, row=0, padx = 1)
-        self.barra12 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra12.grid(column=11, row=0, padx = 1)
-        self.barra13 = ttk.Progressbar(self.frame1, orient= 'vertical',length=300,  maximum=300, style="Vertical.TProgressbar")
-        self.barra13.grid(column=12, row=0, padx = 1)
-        self.barra14 = ttk.Progressbar(self.frame1, orient= 'vertical', length=300,  maximum=300, style="Vertical.TProgressbar") 
-        self.barra14.grid(column=13, row=0, padx = 1)
-        self.barra15 = ttk.Progressbar(self.frame1, orient= 'vertical', length=300,  maximum=300, style="Vertical.TProgressbar") 
-        self.barra15.grid(column=14, row=0, padx = 1)
-        self.barra16 = ttk.Progressbar(self.frame1, orient= 'vertical', length=300,  maximum=300, style="Vertical.TProgressbar") 
-        self.barra16.grid(column=15, row=0, padx = 1)
-        self.barra17 = ttk.Progressbar(self.frame1, orient= 'vertical', length=300,  maximum=300, style="Vertical.TProgressbar") 
-        self.barra17.grid(column=16, row=0, padx = 1)
-        self.barra18 = ttk.Progressbar(self.frame1, orient= 'vertical', length=300,  maximum=300, style="Vertical.TProgressbar") 
-        self.barra18.grid(column=17, row=0, padx = 1)
-        self.barra19 = ttk.Progressbar(self.frame1, orient= 'vertical', length=300,  maximum=300, style="Vertical.TProgressbar") 
-        self.barra19.grid(column=18, row=0, padx = 1)
-        self.barra20 = ttk.Progressbar(self.frame1, orient= 'vertical', length=300,  maximum=300, style="Vertical.TProgressbar") 
-        self.barra20.grid(column=19, row=0, padx = 1)
+    def pantalla_reflejar(self):
+        self.paginas.select([self.frame_cuatro])
+        self.frame_cuatro.columnconfigure(0, weight=1)
+        self.frame_cuatro.rowconfigure(0, weight=1)
+        self.frame_cuatro.rowconfigure(1, weight=1)
+
+    def pantalla_amplitud(self):
+        self.paginas.select([self.frame_cinco])
+        self.frame_cinco.columnconfigure(0, weight=1)
+        self.frame_cinco.rowconfigure(0, weight=1)
+        self.frame_cinco.rowconfigure(1, weight=1)
+
+    def pantalla_efecto(self):
+        self.paginas.select([self.frame_seis])
+        self.frame_seis.columnconfigure(0, weight=1)
+        self.frame_seis.rowconfigure(0, weight=1)
+        self.frame_seis.rowconfigure(1, weight=1)
