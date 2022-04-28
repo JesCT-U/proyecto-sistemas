@@ -1,4 +1,3 @@
-from cgitb import text
 from tkinter import Tk, Button, Entry, Label, filedialog, ttk, PhotoImage, StringVar, Scrollbar, Frame
 import numpy as np
 import sounddevice as sd
@@ -159,9 +158,26 @@ class Ventana(Frame):
                          bg='black', command=self._bajar)
         boton10.grid(column=3, row=0, pady=10)
 
+        ####### FRAME SEIS #######
+        self.frame11 = Frame(self.frame_seis, bg='black',
+                            width=600, height=350)
+        self.frame11.grid(column=0, row=0)
+        Label(self.frame11, text='Filtro', bg='black',
+              fg='white', font=('Calibri', 20, 'bold')).pack(expand=1)
+
+        self.frame12 = Frame(self.frame_seis, bg='black',
+                            width=600, height=50)
+        self.frame12.grid(column=0, row=1)
+        boton11 = Button(self.frame12, image=self.imagen_play,
+                        bg='black', command=self._filtro)
+        boton11.grid(column=0, row=0, pady=10)
+        boton12 = Button(self.frame12, image=self.imagen_stop,
+                        bg='black', command=self._stop)
+        boton12.grid(column=2, row=0, pady=10)
+
     def cargar_archivo(self):
         self.direccion = filedialog.askopenfilename(
-            initialdir='/', title='Escoger archivo', filetypes=(('mp3 files', '*.mp3*'), ('All files', '*.*')))
+            initialdir='/Users/jesus/Desktop', title='Escoger archivo', filetypes=(('Audio Files', '.wav .ogg .flac'), ('All files', '*.*')))
 
         if self.direccion != '':
             nombre_cancion = self.direccion.split('/')
@@ -230,31 +246,46 @@ class Ventana(Frame):
             self.nivel_amplitud['text'] = str(
                 int(self.valor_amplitud*100)) + '%'
 
+    def _filtro(self):
+        try:
+            s, fs = sf.read(self.direccion)
+            h = np.array([0.25, 0.5])
+            s = np.convolve(s, h)
+
+            sd.play(s, fs)
+        except:
+            print('Ingrese una cancion')
+
     def pantalla_play(self):
+        sd.stop()
         self.paginas.select([self.frame_dos])
         self.frame_dos.columnconfigure(0, weight=1)
         self.frame_dos.rowconfigure(0, weight=1)
         self.frame_dos.rowconfigure(1, weight=1)
 
     def pantalla_intercambiar(self):
+        sd.stop()
         self.paginas.select([self.frame_tres])
         self.frame_tres.columnconfigure(0, weight=1)
         self.frame_tres.rowconfigure(0, weight=1)
         self.frame_tres.rowconfigure(1, weight=1)
 
     def pantalla_reflejar(self):
+        sd.stop()
         self.paginas.select([self.frame_cuatro])
         self.frame_cuatro.columnconfigure(0, weight=1)
         self.frame_cuatro.rowconfigure(0, weight=1)
         self.frame_cuatro.rowconfigure(1, weight=1)
 
     def pantalla_amplitud(self):
+        sd.stop()
         self.paginas.select([self.frame_cinco])
         self.frame_cinco.columnconfigure(0, weight=1)
         self.frame_cinco.rowconfigure(0, weight=1)
         self.frame_cinco.rowconfigure(1, weight=1)
 
     def pantalla_efecto(self):
+        sd.stop()
         self.paginas.select([self.frame_seis])
         self.frame_seis.columnconfigure(0, weight=1)
         self.frame_seis.rowconfigure(0, weight=1)
