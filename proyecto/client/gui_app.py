@@ -254,7 +254,7 @@ class Ventana(Frame):
 
             sd.play(s, fs)
         except:
-            print('Ingrese una cancion')
+            print('Ingrese una cancion para el filtro')
 
     def pantalla_play(self):
         sd.stop()
